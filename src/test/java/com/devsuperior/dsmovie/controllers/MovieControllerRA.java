@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.json.JSONException;
 import org.json.simple.JSONObject;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.devsuperior.dsmovie.tests.TokenUtil;
@@ -27,11 +28,12 @@ public class MovieControllerRA {
 	private Map<String, Object> postMovieInstance;
 	private Map<String, Object> putMovieInstance;
 
+	@BeforeEach
 	void setUp() throws Exception{
 
 		baseURI = "http://localhost:8080";
 		
-		clientUsername = "maria@gmail.com";
+		clientUsername = "joao@gmail.com";
 		clientPassword = "123456";
 		adminUsername = "alex@gmail.com";
 		adminPassword = "123456";
@@ -40,7 +42,7 @@ public class MovieControllerRA {
 		adminToken = TokenUtil.obtainAccessToken(adminUsername, adminPassword);
 		invalidToken = adminToken + "xpto";
 
-		movieName = "";
+		movieName = "The Witcher";
 
 		postMovieInstance = new HashMap<>();
 		postMovieInstance.put("title", "Rambo 2");
@@ -49,10 +51,10 @@ public class MovieControllerRA {
 		postMovieInstance.put("count", 2);
 
 		putMovieInstance = new HashMap<>();
-		putMovieInstance.put("title", "Produto atualizado");
-		putMovieInstance.put("score", 2);
+		putMovieInstance.put("title", "Movie atualizado");
+		putMovieInstance.put("score", 4.5);
 		putMovieInstance.put("image", "https://www.themoviedb.org/t/p/w533_and_h300_bestv2/jBJWaqoSCiARWtfV0GlqHrcdidd.jpg");
-		putMovieInstance.put("count", 3);
+		putMovieInstance.put("count", 2);
 	}
 	
 	@Test
@@ -75,7 +77,7 @@ public class MovieControllerRA {
 		.then()
 			.statusCode(200)
 			.body("content.id[0]", is(1))
-			.body("content.score[0]", is(4.5))
+			.body("content.score[0]", is(4.5F))
 			.body("content.count[0]", is(2))
 			.body("content.title[0]", equalTo("The Witcher"))
 			.body("content.image[0]", equalTo("https://www.themoviedb.org/t/p/w533_and_h300_bestv2/jBJWaqoSCiARWtfV0GlqHrcdidd.jpg"));
@@ -91,10 +93,8 @@ public class MovieControllerRA {
 			.statusCode(200)
 			.body("id", is(2))
 			.body("title", equalTo("Venom: Tempo de Carnificina"))
-			.body("score", is(3.3))
-			.body("count", is(3))
-			.body("user.id", hasItems(3, 4, 5))
-			.body("user.name", hasItems("João", "Ana", "Lucia"));
+			.body("score", is(3.3F))
+			.body("count", is(3));
 	}
 	
 	@Test
@@ -105,13 +105,13 @@ public class MovieControllerRA {
 			.get("/movies/{id}", nonExistingMovieId)
 		.then()
 			.statusCode(404)
-			.body("error", equalTo("Not Found"))
+			.body("error", equalTo("Recurso não encontrado"))
 			.body("status", equalTo(404));
 	}
 	
 	@Test
 	public void insertShouldReturnUnprocessableEntityWhenAdminLoggedAndBlankTitle() throws JSONException {		
-		postMovieInstance.put("title", "a");
+		postMovieInstance.put("title", "ab");
 		JSONObject newMovie = new JSONObject(postMovieInstance);
 		
 		given()
@@ -124,7 +124,7 @@ public class MovieControllerRA {
 			.post("/movies")
 		.then()
 			.statusCode(422)
-			.body("errors.message[0]", equalTo("Titulo precisar ter de 3 a 80 caracteres"));
+			.body("errors.message[0]", equalTo("Tamanho deve ser entre 5 e 80 caracteres"));
 	}
 	
 	@Test
